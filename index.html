@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Energy Monitoring & Usage Prediction System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --primary-color: #1e3a5f;
+            --secondary-color: #2874a6;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+            --bg-gradient: linear-gradient(135deg, #1e3a5f 0%, #2874a6 100%);
+            --card-shadow: 0 8px 30px rgba(30, 58, 95, 0.08);
+            --hover-shadow: 0 12px 40px rgba(30, 58, 95, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(40, 116, 166, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(30, 58, 95, 0.03) 0%, transparent 50%);
+            z-index: -1;
+            animation: bgShift 20s ease infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Enhanced Navbar */
+        .navbar {
+            background: var(--bg-gradient) !important;
+            box-shadow: 0 4px 20px rgba(30, 58, 95, 0.2);
+            padding: 1.2rem 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar-brand i {
+            font-size: 1.8rem;
+            animation: pulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.3));
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(255,255,255,0.3)); }
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 12px rgba(255,255,255,0.5)); }
+        }
+
+        .nav-link {
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.6rem 1.2rem !important;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-radius: 8px;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: white;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: 70%;
+        }
+
+        /* Enhanced Cards */
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease;
+            background: white;
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-gradient);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-header {
+            background: var(--bg-gradient);
+            color: white;
+            font-weight: 600;
+            padding: 1.25rem 1.75rem;
+            border: none;
+            font-size: 1.1rem;
+            letter-spacing: -0.3px;
+        }
+
+        .card-header i {
+            margin-right: 10px;
+            opacity: 0.95;
+        }
+
+        /* Premium Stats Cards */
+        .stats-card {
+            background: linear-gradient(135deg, white 0%, #f8f9fa 100%);
+            border-radius: 16px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
+            border: 1px solid rgba(30, 58, 95, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(40, 116, 166, 0.08) 0%, transparent 70%);
+            transition: all 0.6s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: var(--hover-shadow);
+            border-color: var(--secondary-color);
+        }
+
+        .stats-card:hover::before {
+            top: -30%;
+            right: -30%;
+        }
+
+        .stats-icon {
+            font-size: 3rem;
+            margin-bottom: 1.25rem;
+            background: var(--bg-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 2px 4px rgba(30, 58, 95, 0.1));
+        }
+
+        .stats-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stats-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Premium Gauge */
+        .gauge-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin: 25px auto;
+        }
+
+        .gauge-circle {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--success-color) 0% 33%,
+                var(--warning-color) 33% 66%,
+                var(--danger-color) 66% 100%
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: rotateIn 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 24px rgba(30, 58, 95, 0.15);
+        }
+
+        @keyframes rotateIn {
+            from { transform: rotate(-180deg) scale(0.8); opacity: 0; }
+            to { transform: rotate(0) scale(1); opacity: 1; }
+        }
+
+        .gauge-inner {
+            width: 180px;
+            height: 180px;
+            background: linear-gradient(135deg, white 0%, #f8f9fa 100%);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        .gauge-value {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin: 0;
+            letter-spacing: -2px;
+        }
+
+        .gauge-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Premium Alerts */
+        .alert {
+            border-radius: 12px;
+            border: none;
+            border-left: 4px solid;
+            margin-bottom: 1rem;
+            animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 1.25rem 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .alert:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .alert i {
+            font-size: 1.4rem;
+            margin-top: 2px;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #fffbeb 100%);
+            border-left-color: var(--warning-color);
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #f8d7da 0%, #fdeaeb 100%);
+            border-left-color: var(--danger-color);
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #d1ecf1 0%, #e7f5f8 100%);
+            border-left-color: var(--info-color);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda 0%, #e8f5e9 100%);
+            border-left-color: var(--success-color);
+        }
+
+        /* Section Headers */
+        section h2 {
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 2.5rem;
+            position: relative;
+            padding-bottom: 1rem;
+            font-size: 2rem;
+            letter-spacing: -1px;
+        }
+
+        section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 80px;
+            height: 5px;
+            background: var(--bg-gradient);
+            border-radius: 3px;
+        }
+
+        section h2 i {
+            margin-right: 15px;
+            color: var(--secondary-color);
+            filter: drop-shadow(0 2px 4px rgba(30, 58, 95, 0.1));
+        }
+
+        /* Premium Recommendations */
+        .recommendations-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendations-list li {
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            background: linear-gradient(to right, white 0%, #f8f9fa 100%);
+            border-left: 5px solid var(--success-color);
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(30, 58, 95, 0.06);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .recommendations-list li::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--bg-gradient);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .recommendations-list li:hover {
+            background: linear-gradient(to right, #f8f9fa 0%, white 100%);
+            transform: translateX(15px);
+            box-shadow: 0 6px 20px rgba(30, 58, 95, 0.12);
+        }
+
+        .recommendations-list li:hover::before {
+            transform: scaleY(1);
+        }
+
+        .recommendations-list li i {
+            color: var(--success-color);
+            margin-right: 15px;
+            font-size: 1.3rem;
+            filter: drop-shadow(0 2px 4px rgba(39, 174, 96, 0.2));
+        }
+
+        .recommendations-list li strong {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 1.25rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .status-badge:hover {
+            transform: scale(1.05);
+        }
+
+        .status-normal {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+        }
+
+        /* Prediction Info Box */
+        .prediction-info {
+            background: linear-gradient(135deg, white 0%, #f8f9fa 100%);
+            border-radius: 12px;
+            padding: 1.75rem;
+            margin-top: 1.75rem;
+            border: 2px solid rgba(30, 58, 95, 0.08);
+            box-shadow: 0 4px 16px rgba(30, 58, 95, 0.06);
+        }
+
+        .prediction-info .row > div {
+            padding: 1rem;
+            position: relative;
+        }
+
+        .prediction-info .row > div:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 60%;
+            background: rgba(30, 58, 95, 0.1);
+        }
+
+        .prediction-info strong {
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .prediction-info span {
+            color: #495057;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .prediction-info i {
+            margin-right: 8px;
+            color: var(--secondary-color);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-gradient);
+            color: white;
+            padding: 3rem 0;
+            margin-top: 5rem;
+            box-shadow: 0 -4px 20px rgba(30, 58, 95, 0.2);
+        }
+
+        footer p {
+            margin: 0.5rem 0;
+        }
+
+        .footer-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            letter-spacing: -0.5px;
+        }
+
+        .team-names {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        /* Chart wrapper */
+        .chart-wrapper {
+            position: relative;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            min-height: 300px;
+        }
+
+        /* SDG Badges */
+        .sdg-container {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, white 100%);
+            border-radius: 12px;
+        }
+
+        .sdg-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 1rem 1.75rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(30, 58, 95, 0.08);
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+        }
+
+        .sdg-badge:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(30, 58, 95, 0.15);
+        }
+
+        .sdg-badge.sdg-7 { 
+            border-left: 5px solid #FCC30B;
+        }
+        
+        .sdg-badge.sdg-7:hover {
+            border-color: #FCC30B;
+            background: linear-gradient(135deg, #fff9e6 0%, white 100%);
+        }
+
+        .sdg-badge.sdg-9 { 
+            border-left: 5px solid #FD6925;
+        }
+
+        .sdg-badge.sdg-9:hover {
+            border-color: #FD6925;
+            background: linear-gradient(135deg, #fff3ed 0%, white 100%);
+        }
+
+        .sdg-badge.sdg-12 { 
+            border-left: 5px solid #BF8B2E;
+        }
+
+        .sdg-badge.sdg-12:hover {
+            border-color: #BF8B2E;
+            background: linear-gradient(135deg, #fdf6e8 0%, white 100%);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .gauge-container {
+                width: 180px;
+                height: 180px;
+            }
+
+            .gauge-circle {
+                width: 180px;
+                height: 180px;
+            }
+
+            .gauge-inner {
+                width: 150px;
+                height: 150px;
+            }
+
+            .gauge-value {
+                font-size: 2.2rem;
+            }
+
+            section h2 {
+                font-size: 1.6rem;
+            }
+
+            .stats-value {
+                font-size: 1.6rem;
+            }
+
+            .prediction-info .row > div::after {
+                display: none;
+            }
+        }
+
+        /* Scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading animation */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .loading-shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-bolt"></i>
+                Smart Energy Monitoring
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="#dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#historical"><i class="fas fa-chart-bar"></i> Historical</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#predictions"><i class="fas fa-brain"></i> Predictions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#alerts"><i class="fas fa-bell"></i> Alerts</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#recommendations"><i class="fas fa-lightbulb"></i> Tips</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#settings"><i class="fas fa-cog"></i> Settings</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-5 px-4">
+
+        <!-- Real-Time Dashboard Section -->
+        <section id="dashboard">
+            <h2><i class="fas fa-bolt"></i> Real-Time Energy Monitoring</h2>
+            
+            <!-- Stats Overview -->
+            <div class="row mb-4 g-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <i class="fas fa-plug stats-icon"></i>
+                        <div class="stats-value">450 W</div>
+                        <div class="stats-label">Current Usage</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <i class="fas fa-calendar-day stats-icon"></i>
+                        <div class="stats-value">10.8 kWh</div>
+                        <div class="stats-label">Today's Consumption</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <i class="fas fa-peso-sign stats-icon"></i>
+                        <div class="stats-value">₱145.80</div>
+                        <div class="stats-label">Estimated Cost</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <i class="fas fa-leaf stats-icon"></i>
+                        <div class="stats-value">5.4 kg</div>
+                        <div class="stats-label">CO₂ Impact</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-gauge-high"></i> Instantaneous Power
+                        </div>
+                        <div class="card-body">
+                            <div class="gauge-container">
+                                <div class="gauge-circle">
+                                    <div class="gauge-inner">
+                                        <div class="gauge-value">450</div>
+                                        <div class="gauge-label">Watts</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <span class="status-badge status-normal">
+                                    <i class="fas fa-check-circle"></i> Normal Operation
+                                </span>
+                            </div>
+                            <div class="text-center mt-3">
+                                <small class="text-muted"><i class="fas fa-clock"></i> Updated: <span id="lastUpdate">Just now</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-chart-line"></i> Live Usage Monitor
+                            <small class="float-end" style="font-weight: 400; opacity: 0.9;">Last 10 Minutes</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-wrapper">
+                                <canvas id="liveChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Historical Data Section -->
+        <section id="historical" class="mt-5 pt-4">
+            <h2><i class="fas fa-history"></i> Historical Energy Usage</h2>
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar"></i> Weekly Consumption Analysis
+                </div>
+                <div class="card-body">
+                    <div class="chart-wrapper">
+                        <canvas id="historicalChart"></canvas>
+                    </div>
+                    <div class="prediction-info">
+                        <div class="row g-0">
+                            <div class="col-md-4 text-center">
+                                <strong><i class="fas fa-calculator"></i> Weekly Average</strong>
+                                <span id="weeklyAverage">11.3 kWh/day</span>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <strong><i class="fas fa-arrow-trend-up"></i> Peak Day</strong>
+                                <span id="peakDay">Saturday (13.5 kWh)</span>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <strong><i class="fas fa-arrow-trend-down"></i> Lowest Day</strong>
+                                <span id="lowDay">Wednesday (9.8 kWh)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Predictions Section -->
+        <section id="predictions" class="mt-5 pt-4">
+            <h2><i class="fas fa-brain"></i> ML-Based Usage Predictions</h2>
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-area"></i> 24-Hour Forecast
+                    <small class="float-end" style="font-weight: 400; opacity: 0.9;">Machine Learning Model: Random Forest</small>
+                </div>
+                <div class="card-body">
+                    <div class="chart-wrapper">
+                        <canvas id="predictionChart"></canvas>
+                    </div>
+                    <div class="prediction-info">
+                        <div class="row g-0">
+                            <div class="col-md-3 text-center">
+                                <strong><i class="fas fa-clock"></i> Peak Hours</strong>
+                                <span id="peakHours">6:00 PM - 9:00 PM</span>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <strong><i class="fas fa-battery-three-quarters"></i> Expected Daily</strong>
+                                <span id="expectedDaily">12.5 kWh</span>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <strong><i class="fas fa-chart-line"></i> Peak Load</strong>
+                                <span id="peakLoad">~600 W at 6 PM</span>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <strong><i class="fas fa-chart-simple"></i> Accuracy</strong>
+                                <span id="modelAccuracy">94.2%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-lightbulb"></i>
+                        <div>
+                            <strong>Prediction Insight</strong><br>
+                            Based on historical patterns, energy demand will peak during evening hours. Consider scheduling high-wattage appliances during off-peak times (10 PM - 6 AM) to reduce costs by up to 30%.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Alerts Section -->
+        <section id="alerts" class="mt-5 pt-4">
+            <h2><i class="fas fa-bell"></i> Automated Alerts & Anomaly Detection</h2>
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-exclamation-triangle"></i> System Notifications
+                </div>
+                <div class="card-body">
+                    <div id="alertsContainer"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recommendations Section -->
+        <section id="recommendations" class="mt-5 pt-4">
+            <h2><i class="fas fa-lightbulb"></i> Personalized Energy-Saving Recommendations</h2>
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-leaf"></i> Smart Tips Based on Your Usage Patterns
+                </div>
+                <div class="card-body">
+                    <ul class="recommendations-list">
+                        <li>
+                            <i class="fas fa-power-off"></i>
+                            <strong>Eliminate Standby Power:</strong> Turn off standby appliances (TV, chargers, computer monitors) to save up to 10% on your monthly bill. Estimated savings: ₱135/month.
+                        </li>
+                        <li>
+                            <i class="fas fa-clock"></i>
+                            <strong>Peak Hour Management:</strong> Avoid using high-wattage devices (washing machine, dryer, electric oven) during peak hours (6-9 PM) to reduce costs by 20-30%.
+                        </li>
+                        <li>
+                            <i class="fas fa-lightbulb"></i>
+                            <strong>LED Upgrade Priority:</strong> Switch remaining incandescent/CFL bulbs to LED for 75% energy reduction in lighting. ROI: 6-12 months.
+                        </li>
+                        <li>
+                            <i class="fas fa-snowflake"></i>
+                            <strong>AC Optimization:</strong> Current AC usage detected at 22°C. Adjust thermostat to 24-25°C for optimal comfort and 10-15% savings without significant comfort loss.
+                        </li>
+                        <li>
+                            <i class="fas fa-sun"></i>
+                            <strong>Natural Light Utilization:</strong> Maximize natural daylight usage between 8 AM - 4 PM. Keep curtains open and delay artificial lighting until necessary.
+                        </li>
+                        <li>
+                            <i class="fas fa-calendar-check"></i>
+                            <strong>Load Scheduling:</strong> Schedule washing machine, dishwasher, and other heavy appliances during off-peak hours (10 PM - 6 AM) for 25% lower rates.
+                        </li>
+                        <li>
+                            <i class="fas fa-microchip"></i>
+                            <strong>Smart Device Integration:</strong> Consider adding smart plugs or timers to automate device shutdown during unused hours, especially for entertainment systems.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SDG Alignment Section -->
+        <section id="sdg-alignment" class="mt-5 pt-4">
+            <h2><i class="fas fa-globe"></i> UN Sustainable Development Goals Alignment</h2>
+            <div class="card">
+                <div class="card-body">
+                    <p class="text-center mb-4" style="font-size: 1.05rem; color: #495057;">This system contributes to achieving the following United Nations Sustainable Development Goals:</p>
+                    <div class="sdg-container">
+                        <div class="sdg-badge sdg-7">
+                            <i class="fas fa-bolt"></i>
+                            <span>SDG 7: Affordable and Clean Energy</span>
+                        </div>
+                        <div class="sdg-badge sdg-9">
+                            <i class="fas fa-industry"></i>
+                            <span>SDG 9: Industry, Innovation, and Infrastructure</span>
+                        </div>
+                        <div class="sdg-badge sdg-12">
+                            <i class="fas fa-recycle"></i>
+                            <span>SDG 12: Responsible Consumption and Production</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-white text-center">
+        <div class="container">
+            <div class="footer-title">
+                <i class="fas fa-bolt"></i> Smart Energy Monitoring & Usage Prediction System
+            </div>
+            <p class="team-names">Capstone Project 2025</p>
+            <p class="team-names">Alcantara, Kristian Diether • Hernandez, Gian Accel • Tan, Benedict James • Viray, Ranuel Glenn</p>
+            <p class="team-names mt-2">Adviser: Balmes, Irene</p>
+            <p class="mt-3" style="font-size: 0.9rem; opacity: 0.9;">
+                National University - College of Computing and Information Technologies<br>
+                BS Information Technology - Mobile and Web Application Specialization
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Fake datasets for prototype demonstration
+        const fakeData = {
+            stats: {
+                currentUsage: 450,
+                todaysConsumption: 10.8,
+                estimatedCost: 145.80,
+                co2: 5.4
+            },
+            live: {
+                labels: ['10:00','10:01','10:02','10:03','10:04','10:05','10:06','10:07','10:08','10:09'],
+                values: [300,320,310,350,400,450,420,380,410,450]
+            },
+            historical: {
+                labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+                values: [10.2,11.5,9.8,12.3,11.0,13.5,10.8]
+            },
+            prediction: {
+                hours: Array.from({length:24},(_,i)=> (i<10? '0'+i: ''+i) + ':00'),
+                values: [200,180,150,120,100,80,100,150,200,300,400,500,600,550,500,450,400,350,300,250,200,150,100,80]
+            }
+        };
+
+        // Helper function to format numbers
+        function fmt(n, digits=1) { 
+            return (Math.round(n * Math.pow(10, digits)) / Math.pow(10, digits)).toLocaleString(); 
+        }
+
+        // Populate stat cards
+        function populateStats(){
+            const statEls = document.querySelectorAll('.stats-value');
+            if(statEls && statEls.length >= 4){
+                statEls[0].textContent = fakeData.stats.currentUsage + ' W';
+                statEls[1].textContent = fmt(fakeData.stats.todaysConsumption, 1) + ' kWh';
+                statEls[2].textContent = '₱' + fmt(fakeData.stats.estimatedCost, 2);
+                statEls[3].textContent = fmt(fakeData.stats.co2, 1) + ' kg';
+            }
+            const gaugeVal = document.querySelector('.gauge-value');
+            if(gaugeVal) gaugeVal.textContent = fakeData.stats.currentUsage;
+        }
+
+        // Update timestamp
+        function updateTimestamp() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const lastUpdate = document.getElementById('lastUpdate');
+            if(lastUpdate) lastUpdate.textContent = timeString;
+        }
+
+        // Chart.js Configuration
+        Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        Chart.defaults.color = '#6c757d';
+
+        // Live Chart
+        const liveCtx = document.getElementById('liveChart');
+        const liveChart = new Chart(liveCtx, {
+            type: 'line',
+            data: {
+                labels: fakeData.live.labels.slice(),
+                datasets: [{
+                    label: 'Power Consumption (W)',
+                    data: fakeData.live.values.slice(),
+                    borderColor: '#2874a6',
+                    backgroundColor: 'rgba(40, 116, 166, 0.15)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#2874a6',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#1e3a5f',
+                    pointHoverBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            font: { size: 13, weight: '600' },
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 58, 95, 0.95)',
+                        padding: 12,
+                        borderRadius: 8,
+                        titleFont: { size: 14, weight: '600' },
+                        bodyFont: { size: 13 },
+                        callbacks: {
+                            label: function(context) {
+                                return 'Power: ' + context.parsed.y + ' W';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 700,
+                        title: {
+                            display: true,
+                            text: 'Power (Watts)',
+                            font: { size: 13, weight: '600' }
+                        },
+                        grid: {
+                            color: 'rgba(30, 58, 95, 0.06)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time',
+                            font: { size: 13, weight: '600' }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+
+        // Historical Chart
+        const histCtx = document.getElementById('historicalChart');
+        const historicalChart = new Chart(histCtx, {
+            type: 'bar',
+            data: {
+                labels: fakeData.historical.labels.slice(),
+                datasets: [{
+                    label: 'Daily Consumption (kWh)',
+                    data: fakeData.historical.values.slice(),
+                    backgroundColor: 'rgba(40, 116, 166, 0.8)',
+                    borderColor: '#2874a6',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    hoverBackgroundColor: '#1e3a5f'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            font: { size: 13, weight: '600' },
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 58, 95, 0.95)',
+                        padding: 12,
+                        borderRadius: 8,
+                        titleFont: { size: 14, weight: '600' },
+                        bodyFont: { size: 13 },
+                        callbacks: {
+                            label: function(context) {
+                                return 'Consumption: ' + context.parsed.y + ' kWh';
+                            },
+                            afterLabel: function(context) {
+                                const costPerKWh = 13.50;
+                                const cost = (context.parsed.y * costPerKWh).toFixed(2);
+                                return 'Cost: ₱' + cost;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Energy Consumption (kWh)',
+                            font: { size: 13, weight: '600' }
+                        },
+                        grid: {
+                            color: 'rgba(30, 58, 95, 0.06)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Day of Week',
+                            font: { size: 13, weight: '600' }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+
+        // Prediction Chart
+        const predCtx = document.getElementById('predictionChart');
+        const predictionChart = new Chart(predCtx, {
+            type: 'line',
+            data: {
+                labels: fakeData.prediction.hours.slice(),
+                datasets: [{
+                    label: 'Predicted Power (W)',
+                    data: fakeData.prediction.values.slice(),
+                    borderColor: '#f39c12',
+                    backgroundColor: 'rgba(243, 156, 18, 0.15)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#f39c12',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 7,
+                    pointHoverBackgroundColor: '#e67e22',
+                    pointHoverBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            font: { size: 13, weight: '600' },
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 58, 95, 0.95)',
+                        padding: 12,
+                        borderRadius: 8,
+                        titleFont: { size: 14, weight: '600' },
+                        bodyFont: { size: 13 },
+                        callbacks: {
+                            label: function(context) {
+                                return 'Predicted: ' + context.parsed.y + ' W';
+                            },
+                            afterLabel: function(context) {
+                                if (context.parsed.y > 500) {
+                                    return '⚠️ Peak Hour - High Demand';
+                                } else if (context.parsed.y < 150) {
+                                    return '✓ Off-Peak - Low Demand';
+                                }
+                                return 'Normal Load';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 700,
+                        title: {
+                            display: true,
+                            text: 'Predicted Power (Watts)',
+                            font: { size: 13, weight: '600' }
+                        },
+                        grid: {
+                            color: 'rgba(30, 58, 95, 0.06)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Hour of Day',
+                            font: { size: 13, weight: '600' }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+
+        // Simulate real-time data updates
+        function simulateRealTimeUpdate() {
+            if (liveChart) {
+                const lastValue = liveChart.data.datasets[0].data[liveChart.data.datasets[0].data.length - 1];
+                const newValue = Math.max(50, lastValue + Math.floor(Math.random() * 61) - 30);
+                const now = new Date();
+                const timeLabel = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                
+                liveChart.data.labels.push(timeLabel);
+                liveChart.data.datasets[0].data.push(newValue);
+                
+                if (liveChart.data.labels.length > 20) {
+                    liveChart.data.labels.shift();
+                    liveChart.data.datasets[0].data.shift();
+                }
+                
+                liveChart.update('none');
+                
+                // Update gauge and stats
+                fakeData.stats.currentUsage = newValue;
+                populateStats();
+            }
+        }
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Initialize
+        populateStats();
+        updateTimestamp();
+        setInterval(updateTimestamp, 1000);
+        setInterval(simulateRealTimeUpdate, 3000);
+
+        // Active nav link on scroll
+        window.addEventListener('scroll', () => {
+            let current = '';
+            document.querySelectorAll('section').forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+        // Prediction summaries and Alerts
+        function computePredictionSummary(pred) {
+            if(!pred || !pred.values || !pred.hours) return null;
+            const values = pred.values.slice();
+            const hours = pred.hours.slice();
+            // Peak load
+            let peakVal = -Infinity, peakIdx = 0;
+            let total = 0;
+            for(let i=0;i<values.length;i++){
+                const v = values[i] || 0;
+                total += v;
+                if(v > peakVal){ peakVal = v; peakIdx = i; }
+            }
+            const avg = total / values.length;
+            const peakHour = hours[peakIdx] || '';
+            return {
+                peakVal: Math.round(peakVal),
+                peakHour,
+                expectedDailyKWh: +(avg * 24 / 1000).toFixed(2), // rough estimate
+                avg
+            };
+        }
+
+        function renderPredictionInfo() {
+            try{
+                const summary = computePredictionSummary(fakeData.prediction);
+                if(!summary) return;
+                const peakHoursEl = document.getElementById('peakHours');
+                const expectedDailyEl = document.getElementById('expectedDaily');
+                const peakLoadEl = document.getElementById('peakLoad');
+                if(peakHoursEl) peakHoursEl.textContent = summary.peakHour;
+                if(expectedDailyEl) expectedDailyEl.textContent = summary.expectedDailyKWh + ' kWh';
+                if(peakLoadEl) peakLoadEl.textContent = summary.peakVal + ' W at ' + summary.peakHour;
+            }catch(e){console.error('renderPredictionInfo error',e);}
+        }
+
+        // Simple anomaly detection and alert generation
+        function detectAnomaliesAndAlerts() {
+            try{
+                const container = document.getElementById('alertsContainer');
+                if(!container) return;
+                container.innerHTML = '';
+
+                // 1) Check live data for sudden spikes (compare last 3 points)
+                const live = liveChart && liveChart.data && liveChart.data.datasets[0] ? liveChart.data.datasets[0].data : (fakeData.live && fakeData.live.values ? fakeData.live.values : []);
+                const recent = live.slice(-5);
+                const mean = recent.reduce((a,b)=>a+(b||0),0) / (recent.length||1);
+                const last = recent[recent.length-1] || 0;
+                if(last > mean * 1.7 && last > 500) {
+                    const el = document.createElement('div');
+                    el.className = 'alert alert-danger';
+                    el.innerHTML = `<i class="fas fa-bolt"></i><div><strong>Sudden Spike Detected</strong><br>Live usage jumped to ${last} W which is significantly above recent average (${Math.round(mean)} W). Consider checking devices or scheduling heavy loads later.<div style="font-size:0.85rem;color:#6c757d;margin-top:8px;"><i class="fas fa-clock"></i> Just now</div></div>`;
+                    container.appendChild(el);
+                }
+
+                // 2) Prediction-based peak alert
+                const summary = computePredictionSummary(fakeData.prediction);
+                if(summary && summary.peakVal > 600) {
+                    const el = document.createElement('div');
+                    el.className = 'alert alert-warning';
+                    el.innerHTML = `<i class="fas fa-exclamation-circle"></i><div><strong>Peak Demand Predicted</strong><br>Forecasted peak of ${summary.peakVal} W at ${summary.peakHour}. Reduce high-wattage activities during that hour to avoid higher charges.<div style="font-size:0.85rem;color:#6c757d;margin-top:8px;"><i class="fas fa-clock"></i> Today</div></div>`;
+                    container.appendChild(el);
+                }
+
+                // 3) Routine info alert - energy savings
+                const savingsEl = document.createElement('div');
+                savingsEl.className = 'alert alert-success';
+                savingsEl.innerHTML = `<i class="fas fa-check-circle"></i><div><strong>Energy Savings</strong><br>Your projected daily consumption is ${summary ? summary.expectedDailyKWh + ' kWh' : 'N/A'}. Keep up efficient usage to lower costs.<div style="font-size:0.85rem;color:#6c757d;margin-top:8px;"><i class="fas fa-clock"></i> Updated just now</div></div>`;
+                container.appendChild(savingsEl);
+            }catch(e){console.error('detectAnomaliesAndAlerts error',e);} 
+        }
+
+        // Guarded chart updates for dynamic data
+        function safeUpdateCharts(){
+            try{
+                if(typeof historicalChart !== 'undefined' && historicalChart) {
+                    historicalChart.data.labels = fakeData.historical.labels.slice();
+                    historicalChart.data.datasets[0].data = fakeData.historical.values.slice();
+                    historicalChart.update();
+                }
+            }catch(e){console.warn('historicalChart update skipped',e);}
+            try{
+                if(typeof predictionChart !== 'undefined' && predictionChart) {
+                    predictionChart.data.labels = fakeData.prediction.hours.slice();
+                    predictionChart.data.datasets[0].data = fakeData.prediction.values.slice();
+                    predictionChart.update();
+                }
+            }catch(e){console.warn('predictionChart update skipped',e);}
+        }
+
+        // Run initial render
+        renderPredictionInfo();
+        detectAnomaliesAndAlerts();
+
+        // Recompute alerts when liveChart updates
+        (function hookLiveChart(){
+            try{
+                const originalUpdate = liveChart.update.bind(liveChart);
+                liveChart.update = function(){
+                    originalUpdate.apply(this, arguments);
+                    try{ renderPredictionInfo(); detectAnomaliesAndAlerts(); safeUpdateCharts(); }catch(e){}
+                };
+            }catch(e){/* no-op if liveChart missing */}
+        })();
+    </script>
+
+</body>
+</html>
