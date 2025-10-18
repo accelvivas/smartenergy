@@ -1184,13 +1184,19 @@
             if(lastUpdate) lastUpdate.textContent = timeString;
         }
 
-        // Chart.js Configuration
-        Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-        Chart.defaults.color = '#6c757d';
+        // Chart.js Configuration (guard if CDN failed)
+        if(window.Chart){
+            Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+            Chart.defaults.color = '#6c757d';
+        } else {
+            logLine('Chart.js not available. Charts will be skipped.');
+        }
 
-        // Live Chart
+        // Live Chart (guarded)
         const liveCtx = document.getElementById('liveChart');
-        const liveChart = new Chart(liveCtx, {
+        let liveChart = null;
+        if(window.Chart && liveCtx){
+        liveChart = new Chart(liveCtx, {
             type: 'line',
             data: {
                 labels: fakeData.live.labels.slice(),
@@ -1266,166 +1272,172 @@
             }
         });
 
-        // Historical Chart
+        // Historical Chart (guarded)
         const histCtx = document.getElementById('historicalChart');
-        const historicalChart = new Chart(histCtx, {
-            type: 'bar',
-            data: {
-                labels: fakeData.historical.labels.slice(),
-                datasets: [{
-                    label: 'Daily Consumption (kWh)',
-                    data: fakeData.historical.values.slice(),
-                    backgroundColor: 'rgba(40, 116, 166, 0.8)',
-                    borderColor: '#2874a6',
-                    borderWidth: 2,
-                    borderRadius: 8,
-                    hoverBackgroundColor: '#1e3a5f'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        labels: {
-                            font: { size: 13, weight: '600' },
-                            padding: 15
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(30, 58, 95, 0.95)',
-                        padding: 12,
+        let historicalChart = null;
+        if(window.Chart && histCtx){
+            historicalChart = new Chart(histCtx, {
+                type: 'bar',
+                data: {
+                    labels: fakeData.historical.labels.slice(),
+                    datasets: [{
+                        label: 'Daily Consumption (kWh)',
+                        data: fakeData.historical.values.slice(),
+                        backgroundColor: 'rgba(40, 116, 166, 0.8)',
+                        borderColor: '#2874a6',
+                        borderWidth: 2,
                         borderRadius: 8,
-                        titleFont: { size: 14, weight: '600' },
-                        bodyFont: { size: 13 },
-                        callbacks: {
-                            label: function(context) {
-                                return 'Consumption: ' + context.parsed.y + ' kWh';
-                            },
-                            afterLabel: function(context) {
-                                const costPerKWh = 13.50;
-                                const cost = (context.parsed.y * costPerKWh).toFixed(2);
-                                return 'Cost: ₱' + cost;
+                        hoverBackgroundColor: '#1e3a5f'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: { size: 13, weight: '600' },
+                                padding: 15
                             }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Energy Consumption (kWh)',
-                            font: { size: 13, weight: '600' }
                         },
-                        grid: {
-                            color: 'rgba(30, 58, 95, 0.06)'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Day of Week',
-                            font: { size: 13, weight: '600' }
-                        },
-                        grid: {
-                            display: false
-                        }
-                    }
-                },
-                animation: {
-                    duration: 1000,
-                    easing: 'easeInOutQuart'
-                }
-            }
-        });
-
-        // Prediction Chart
-        const predCtx = document.getElementById('predictionChart');
-        const predictionChart = new Chart(predCtx, {
-            type: 'line',
-            data: {
-                labels: fakeData.prediction.hours.slice(),
-                datasets: [{
-                    label: 'Predicted Power (W)',
-                    data: fakeData.prediction.values.slice(),
-                    borderColor: '#f39c12',
-                    backgroundColor: 'rgba(243, 156, 18, 0.15)',
-                    fill: true,
-                    tension: 0.4,
-                    borderWidth: 3,
-                    pointBackgroundColor: '#f39c12',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 7,
-                    pointHoverBackgroundColor: '#e67e22',
-                    pointHoverBorderWidth: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        labels: {
-                            font: { size: 13, weight: '600' },
-                            padding: 15
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(30, 58, 95, 0.95)',
-                        padding: 12,
-                        borderRadius: 8,
-                        titleFont: { size: 14, weight: '600' },
-                        bodyFont: { size: 13 },
-                        callbacks: {
-                            label: function(context) {
-                                return 'Predicted: ' + context.parsed.y + ' W';
-                            },
-                            afterLabel: function(context) {
-                                if (context.parsed.y > 500) {
-                                    return '⚠️ Peak Hour - High Demand';
-                                } else if (context.parsed.y < 150) {
-                                    return '✓ Off-Peak - Low Demand';
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 58, 95, 0.95)',
+                            padding: 12,
+                            borderRadius: 8,
+                            titleFont: { size: 14, weight: '600' },
+                            bodyFont: { size: 13 },
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Consumption: ' + context.parsed.y + ' kWh';
+                                },
+                                afterLabel: function(context) {
+                                    const costPerKWh = 13.50;
+                                    const cost = (context.parsed.y * costPerKWh).toFixed(2);
+                                    return 'Cost: ₱' + cost;
                                 }
-                                return 'Normal Load';
                             }
                         }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        suggestedMax: 700,
-                        title: {
-                            display: true,
-                            text: 'Predicted Power (Watts)',
-                            font: { size: 13, weight: '600' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Energy Consumption (kWh)',
+                                font: { size: 13, weight: '600' }
+                            },
+                            grid: {
+                                color: 'rgba(30, 58, 95, 0.06)'
+                            }
                         },
-                        grid: {
-                            color: 'rgba(30, 58, 95, 0.06)'
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Day of Week',
+                                font: { size: 13, weight: '600' }
+                            },
+                            grid: {
+                                display: false
+                            }
                         }
                     },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Hour of Day',
-                            font: { size: 13, weight: '600' }
-                        },
-                        grid: {
-                            display: false
-                        }
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
                     }
-                },
-                animation: {
-                    duration: 1000,
-                    easing: 'easeInOutQuart'
                 }
-            }
-        });
+            });
+        }
+
+        // Prediction Chart (guarded)
+        const predCtx = document.getElementById('predictionChart');
+        let predictionChart = null;
+        if(window.Chart && predCtx){
+            predictionChart = new Chart(predCtx, {
+                type: 'line',
+                data: {
+                    labels: fakeData.prediction.hours.slice(),
+                    datasets: [{
+                        label: 'Predicted Power (W)',
+                        data: fakeData.prediction.values.slice(),
+                        borderColor: '#f39c12',
+                        backgroundColor: 'rgba(243, 156, 18, 0.15)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#f39c12',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        pointHoverBackgroundColor: '#e67e22',
+                        pointHoverBorderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: { size: 13, weight: '600' },
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 58, 95, 0.95)',
+                            padding: 12,
+                            borderRadius: 8,
+                            titleFont: { size: 14, weight: '600' },
+                            bodyFont: { size: 13 },
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Predicted: ' + context.parsed.y + ' W';
+                                },
+                                afterLabel: function(context) {
+                                    if (context.parsed.y > 500) {
+                                        return '⚠️ Peak Hour - High Demand';
+                                    } else if (context.parsed.y < 150) {
+                                        return '✓ Off-Peak - Low Demand';
+                                    }
+                                    return 'Normal Load';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: 700,
+                            title: {
+                                display: true,
+                                text: 'Predicted Power (Watts)',
+                                font: { size: 13, weight: '600' }
+                            },
+                            grid: {
+                                color: 'rgba(30, 58, 95, 0.06)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Hour of Day',
+                                font: { size: 13, weight: '600' }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
 
         // Simulate real-time data updates
         function simulateRealTimeUpdate() {
@@ -1902,7 +1914,9 @@
             detectAnomaliesAndAlerts();
             logLine('System initialized.');
         });
+    }
     </script>
 
 </body>
 </html>
+        
