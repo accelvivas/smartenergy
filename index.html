@@ -61,10 +61,11 @@
 
         /* Enhanced Navbar */
         .navbar {
-            background: var(--bg-gradient) !important;
-            box-shadow: 0 4px 20px rgba(30, 58, 95, 0.2);
+            background: #ffffff !important;
+            box-shadow: 0 4px 20px rgba(30, 58, 95, 0.08);
             padding: 1.2rem 0;
-            backdrop-filter: blur(10px);
+            backdrop-filter: saturate(120%);
+            border-bottom: 1px solid rgba(30, 58, 95, 0.08);
         }
 
         .navbar-brand {
@@ -629,7 +630,7 @@
 <body>
 
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container-fluid px-4">
             <a class="navbar-brand" href="#">
                 <img src="images/logo3.png" alt="Smart Energy Logo">
@@ -639,13 +640,26 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
                     <li class="nav-item"><a class="nav-link active" href="#dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#historical"><i class="fas fa-chart-bar"></i> Historical</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#predictions"><i class="fas fa-brain"></i> Predictions</a></li>
                     <li class="nav-item"><a class="nav-link" href="#alerts"><i class="fas fa-bell"></i> Alerts</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#recommendations"><i class="fas fa-lightbulb"></i> Tips</a></li>
                     <li class="nav-item"><a class="nav-link" href="#settings"><i class="fas fa-cog"></i> Settings</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="moreDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-ellipsis"></i> More
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreDropdown">
+                            <li><a class="dropdown-item nav-link" href="#historical"><i class="fas fa-chart-bar"></i> Historical</a></li>
+                            <li><a class="dropdown-item nav-link" href="#predictions"><i class="fas fa-brain"></i> Predictions</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item ms-lg-3">
+                        <span id="userBadge" class="badge bg-light text-dark" style="display:none;"><i class="fas fa-user"></i> <span id="userBadgeName"></span> • <span id="userBadgeRole"></span></span>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <button id="loginBtn" class="btn btn-sm btn-outline-dark" data-bs-toggle="modal" data-bs-target="#loginModal"><i class="fas fa-right-to-bracket"></i> Login</button>
+                        <button id="logoutBtn" class="btn btn-sm btn-warning" style="display:none;"><i class="fas fa-right-from-bracket"></i> Logout</button>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -732,6 +746,111 @@
             </div>
         </section>
 
+        <!-- Devices Section -->
+        <section id="devices" class="mt-5 pt-4">
+            <h2><i class="fas fa-plug-circle-bolt"></i> Device Management</h2>
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-list"></i> Registered Devices
+                </div>
+                <div class="card-body">
+                    <form id="addDeviceForm" class="row g-2 mb-3">
+                        <div class="col-md-4">
+                            <input type="text" id="deviceName" class="form-control" placeholder="Device name (e.g., Aircon)" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" id="deviceSensor" class="form-control" placeholder="Sensor ID / Topic" required>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="deviceHealth" class="form-select" required>
+                                <option value="Good" selected>Good</option>
+                                <option value="Warning">Warning</option>
+                                <option value="Offline">Offline</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1 d-grid">
+                            <button class="btn btn-success" type="submit"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </form>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Sensor</th>
+                                    <th>Health</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="devicesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reports Section -->
+        <section id="reports" class="mt-5 pt-4">
+            <h2><i class="fas fa-file-export"></i> Export & Reports</h2>
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-download"></i> Export Consumption Summaries
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button id="exportCsvBtn" class="btn btn-outline-primary"><i class="fas fa-file-csv"></i> Export CSV</button>
+                        <button id="exportPdfBtn" class="btn btn-outline-danger"><i class="fas fa-file-pdf"></i> Export PDF</button>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="scheduleToggle">
+                        <label class="form-check-label" for="scheduleToggle">Enable scheduled daily report (08:00)</label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings/Admin Section -->
+        <section id="settings" class="mt-5 pt-4">
+            <h2><i class="fas fa-cog"></i> Settings</h2>
+            <div class="row g-4">
+                <div class="col-lg-6" data-role="admin">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-users-gear"></i> Manage Users (Admin)
+                        </div>
+                        <div class="card-body">
+                            <form id="addUserForm" class="row g-2 mb-3">
+                                <div class="col-md-5"><input id="userEmail" type="email" class="form-control" placeholder="email@domain.com" required></div>
+                                <div class="col-md-4">
+                                    <select id="userRole" class="form-select">
+                                        <option value="user" selected>User</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 d-grid"><button class="btn btn-primary" type="submit"><i class="fas fa-user-plus"></i> Add</button></div>
+                            </form>
+                            <div class="table-responsive">
+                                <table class="table table-striped align-middle">
+                                    <thead><tr><th>Email</th><th>Role</th><th class="text-end">Actions</th></tr></thead>
+                                    <tbody id="usersTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6" data-role="admin">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-file-lines"></i> System Logs (Admin)
+                        </div>
+                        <div class="card-body">
+                            <div id="logsContainer" class="border rounded p-3" style="min-height:180px; background:#fafafa; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Historical Data Section -->
         <section id="historical" class="mt-5 pt-4">
             <h2><i class="fas fa-history"></i> Historical Energy Usage</h2>
@@ -740,6 +859,20 @@
                     <i class="fas fa-chart-bar"></i> Weekly Consumption Analysis
                 </div>
                 <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <label for="histRangeSel" class="form-label mb-0 me-2"><i class="fas fa-filter"></i> Range</label>
+                            <select id="histRangeSel" class="form-select form-select-sm" style="width: 180px;">
+                                <option value="weekly" selected>Weekly</option>
+                                <option value="daily">Daily (24h)</option>
+                                <option value="monthly">Monthly (30d)</option>
+                            </select>
+                        </div>
+                        <div class="text-end">
+                            <span class="me-3"><strong>Total:</strong> <span id="histTotalKwh">--</span> kWh</span>
+                            <span><strong>Cost:</strong> ₱<span id="histTotalCost">--</span></span>
+                        </div>
+                    </div>
                     <div class="chart-wrapper">
                         <canvas id="historicalChart"></canvas>
                     </div>
@@ -772,6 +905,19 @@
                     <small class="float-end" style="font-weight: 400; opacity: 0.9;">Machine Learning Model: Random Forest</small>
                 </div>
                 <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <label for="predRangeSel" class="form-label mb-0 me-2"><i class="fas fa-clock"></i> Forecast</label>
+                            <select id="predRangeSel" class="form-select form-select-sm" style="width: 180px;">
+                                <option value="24" selected>Next 24 hours</option>
+                                <option value="48">Next 48 hours</option>
+                                <option value="72">Next 72 hours</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button id="fetchForecastBtn" class="btn btn-sm btn-outline-secondary"><i class="fas fa-rotate"></i> Refresh Forecast</button>
+                        </div>
+                    </div>
                     <div class="chart-wrapper">
                         <canvas id="predictionChart"></canvas>
                     </div>
@@ -814,7 +960,43 @@
                     <i class="fas fa-exclamation-triangle"></i> System Notifications
                 </div>
                 <div class="card-body">
-                    <div id="alertsContainer"></div>
+                    <div class="row g-4">
+                        <div class="col-lg-8">
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#alertsActiveTab" type="button" role="tab">Active</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="past-tab" data-bs-toggle="tab" data-bs-target="#alertsPastTab" type="button" role="tab">Past</button>
+                                </li>
+                            </ul>
+                            <div class="tab-content p-3 border border-top-0 rounded-bottom">
+                                <div class="tab-pane fade show active" id="alertsActiveTab" role="tabpanel">
+                                    <div id="alertsActive"></div>
+                                </div>
+                                <div class="tab-pane fade" id="alertsPastTab" role="tabpanel">
+                                    <div id="alertsPast"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="border rounded p-3">
+                                <div class="mb-3"><strong><i class="fas fa-sliders"></i> Alert Thresholds</strong></div>
+                                <div class="mb-2">
+                                    <label class="form-label">Spike multiplier vs recent avg</label>
+                                    <input type="number" step="0.1" min="1" id="thresholdMultiplier" class="form-control form-control-sm" placeholder="e.g., 1.7">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Absolute spike threshold (W)</label>
+                                    <input type="number" min="0" id="thresholdAbsolute" class="form-control form-control-sm" placeholder="e.g., 500">
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button id="saveThresholdsBtn" class="btn btn-sm btn-primary"><i class="fas fa-save"></i> Save Thresholds</button>
+                                    <button id="sendTestAlertBtn" class="btn btn-sm btn-outline-secondary"><i class="fas fa-paper-plane"></i> Send Test Notification</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -827,6 +1009,10 @@
                     <i class="fas fa-leaf"></i> Smart Tips Based on Your Usage Patterns
                 </div>
                 <div class="card-body">
+                    <div class="mb-3">
+                        <strong><i class="fas fa-award"></i> Energy-Saving Score:</strong>
+                        <span id="energyScore" class="badge bg-success">--</span>
+                    </div>
                     <ul class="recommendations-list">
                         <li>
                             <i class="fas fa-power-off"></i>
@@ -903,9 +1089,49 @@
         </div>
     </footer>
 
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-right-to-bracket"></i> Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm" class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Email</label>
+                            <input type="email" id="loginEmail" class="form-control" placeholder="you@example.com" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Password</label>
+                            <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
+                            <small class="text-muted">Prototype only. Use admin@demo.com / admin for admin role.</small>
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-primary w-100" type="submit">Login</button>
+                        </div>
+                        <div class="col-12 text-center">
+                            <a href="#" id="forgotPasswordLink">Forgot password?</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // Simple prototype auth/session and role gating
+        (function initAuth(){
+            const saved = localStorage.getItem('auth');
+            let auth = null;
+            try{ auth = saved ? JSON.parse(saved) : null; }catch{} 
+            window.appState = { auth: auth, users: [] };
+            window.appSettings = { spikeMultiplier: 1.7, absoluteSpike: 500 };
+        })();
+
         // Fake datasets for prototype demonstration
         const fakeData = {
             stats: {
@@ -1262,110 +1488,420 @@
                 }
             });
         });
-        // Prediction summaries and Alerts
-        function computePredictionSummary(pred) {
-            if(!pred || !pred.values || !pred.hours) return null;
-            const values = pred.values.slice();
-            const hours = pred.hours.slice();
-            // Peak load
-            let peakVal = -Infinity, peakIdx = 0;
-            let total = 0;
-            for(let i=0;i<values.length;i++){
-                const v = values[i] || 0;
-                total += v;
-                if(v > peakVal){ peakVal = v; peakIdx = i; }
-            }
-            const avg = total / values.length;
-            const peakHour = hours[peakIdx] || '';
-            return {
-                peakVal: Math.round(peakVal),
-                peakHour,
-                expectedDailyKWh: +(avg * 24 / 1000).toFixed(2), // rough estimate
-                avg
+
+        // ---------- Prototype feature wiring ----------
+        const COST_PER_KWH = 13.5;
+
+        // Mock REST endpoints (prototype-only)
+        (function mockApi(){
+            const origFetch = window.fetch ? window.fetch.bind(window) : null;
+            window.fetch = function(input, init){
+                try{
+                    const url = (typeof input === 'string') ? input : (input && input.url) || '';
+                    const u = new URL(url, location.origin);
+                    if(u.pathname === '/api/predict'){
+                        const hours = parseInt(u.searchParams.get('hours')||'24',10);
+                        const pred = generateForecast(hours);
+                        const body = JSON.stringify({ hours: pred.hours, values: pred.values });
+                        return Promise.resolve(new Response(body, { status: 200, headers: { 'Content-Type': 'application/json' } }));
+                    }
+                    if(u.pathname === '/api/historical'){
+                        const range = u.searchParams.get('range')||'weekly';
+                        const hist = computeHistorical(range);
+                        const body = JSON.stringify({ labels: hist.labels, values: hist.values, unit: hist.unit });
+                        return Promise.resolve(new Response(body, { status: 200, headers: { 'Content-Type': 'application/json' } }));
+                    }
+                }catch(e){ /* fall through */ }
+                return origFetch ? origFetch(input, init) : Promise.reject(new Error('fetch not available'));
             };
-        }
-
-        function renderPredictionInfo() {
-            try{
-                const summary = computePredictionSummary(fakeData.prediction);
-                if(!summary) return;
-                const peakHoursEl = document.getElementById('peakHours');
-                const expectedDailyEl = document.getElementById('expectedDaily');
-                const peakLoadEl = document.getElementById('peakLoad');
-                if(peakHoursEl) peakHoursEl.textContent = summary.peakHour;
-                if(expectedDailyEl) expectedDailyEl.textContent = summary.expectedDailyKWh + ' kWh';
-                if(peakLoadEl) peakLoadEl.textContent = summary.peakVal + ' W at ' + summary.peakHour;
-            }catch(e){console.error('renderPredictionInfo error',e);}
-        }
-
-        // Simple anomaly detection and alert generation
-        function detectAnomaliesAndAlerts() {
-            try{
-                const container = document.getElementById('alertsContainer');
-                if(!container) return;
-                container.innerHTML = '';
-
-                // 1) Check live data for sudden spikes (compare last 3 points)
-                const live = liveChart && liveChart.data && liveChart.data.datasets[0] ? liveChart.data.datasets[0].data : (fakeData.live && fakeData.live.values ? fakeData.live.values : []);
-                const recent = live.slice(-5);
-                const mean = recent.reduce((a,b)=>a+(b||0),0) / (recent.length||1);
-                const last = recent[recent.length-1] || 0;
-                if(last > mean * 1.7 && last > 500) {
-                    const el = document.createElement('div');
-                    el.className = 'alert alert-danger';
-                    el.innerHTML = `<i class="fas fa-bolt"></i><div><strong>Sudden Spike Detected</strong><br>Live usage jumped to ${last} W which is significantly above recent average (${Math.round(mean)} W). Consider checking devices or scheduling heavy loads later.<div style="font-size:0.85rem;color:#6c757d;margin-top:8px;"><i class="fas fa-clock"></i> Just now</div></div>`;
-                    container.appendChild(el);
-                }
-
-                // 2) Prediction-based peak alert
-                const summary = computePredictionSummary(fakeData.prediction);
-                if(summary && summary.peakVal > 600) {
-                    const el = document.createElement('div');
-                    el.className = 'alert alert-warning';
-                    el.innerHTML = `<i class="fas fa-exclamation-circle"></i><div><strong>Peak Demand Predicted</strong><br>Forecasted peak of ${summary.peakVal} W at ${summary.peakHour}. Reduce high-wattage activities during that hour to avoid higher charges.<div style="font-size:0.85rem;color:#6c757d;margin-top:8px;"><i class="fas fa-clock"></i> Today</div></div>`;
-                    container.appendChild(el);
-                }
-
-                // 3) Routine info alert - energy savings
-                const savingsEl = document.createElement('div');
-                savingsEl.className = 'alert alert-success';
-                savingsEl.innerHTML = `<i class="fas fa-check-circle"></i><div><strong>Energy Savings</strong><br>Your projected daily consumption is ${summary ? summary.expectedDailyKWh + ' kWh' : 'N/A'}. Keep up efficient usage to lower costs.<div style="font-size:0.85rem;color:#6c757d;margin-top:8px;"><i class="fas fa-clock"></i> Updated just now</div></div>`;
-                container.appendChild(savingsEl);
-            }catch(e){console.error('detectAnomaliesAndAlerts error',e);} 
-        }
-
-        // Guarded chart updates for dynamic data
-        function safeUpdateCharts(){
-            try{
-                if(typeof historicalChart !== 'undefined' && historicalChart) {
-                    historicalChart.data.labels = fakeData.historical.labels.slice();
-                    historicalChart.data.datasets[0].data = fakeData.historical.values.slice();
-                    historicalChart.update();
-                }
-            }catch(e){console.warn('historicalChart update skipped',e);}
-            try{
-                if(typeof predictionChart !== 'undefined' && predictionChart) {
-                    predictionChart.data.labels = fakeData.prediction.hours.slice();
-                    predictionChart.data.datasets[0].data = fakeData.prediction.values.slice();
-                    predictionChart.update();
-                }
-            }catch(e){console.warn('predictionChart update skipped',e);}
-        }
-
-        // Run initial render
-        renderPredictionInfo();
-        detectAnomaliesAndAlerts();
-
-        // Recompute alerts when liveChart updates
-        (function hookLiveChart(){
-            try{
-                const originalUpdate = liveChart.update.bind(liveChart);
-                liveChart.update = function(){
-                    originalUpdate.apply(this, arguments);
-                    try{ renderPredictionInfo(); detectAnomaliesAndAlerts(); safeUpdateCharts(); }catch(e){}
-                };
-            }catch(e){/* no-op if liveChart missing */}
         })();
+
+        function updateAuthUI(){
+            const auth = (window.appState && window.appState.auth) || null;
+            const userBadge = document.getElementById('userBadge');
+            const userBadgeName = document.getElementById('userBadgeName');
+            const userBadgeRole = document.getElementById('userBadgeRole');
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const adminEls = document.querySelectorAll('[data-role="admin"]');
+            if(auth){
+                userBadge.style.display = '';
+                userBadgeName.textContent = auth.email;
+                userBadgeRole.textContent = auth.role;
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = '';
+                adminEls.forEach(el=> el.style.display = (auth.role==='admin')? '':'none');
+            }else{
+                userBadge.style.display = 'none';
+                loginBtn.style.display = '';
+                logoutBtn.style.display = 'none';
+                adminEls.forEach(el=> el.style.display = 'none');
+            }
+        }
+
+        function saveSettings(){
+            const mult = parseFloat(document.getElementById('thresholdMultiplier').value)||1.7;
+            const abs = parseFloat(document.getElementById('thresholdAbsolute').value)||500;
+            window.appSettings = { spikeMultiplier: mult, absoluteSpike: abs };
+            localStorage.setItem('settings', JSON.stringify(window.appSettings));
+            logLine(`Settings saved: spikeMultiplier=${mult}, absoluteSpike=${abs}`);
+            detectAnomaliesAndAlerts();
+        }
+
+        function loadSettings(){
+            const saved = localStorage.getItem('settings');
+            if(saved){
+                try{ window.appSettings = JSON.parse(saved) || window.appSettings; }catch{}
+            }
+            document.getElementById('thresholdMultiplier').value = window.appSettings.spikeMultiplier;
+            document.getElementById('thresholdAbsolute').value = window.appSettings.absoluteSpike;
+        }
+
+        function computeHistorical(range){
+            if(range==='weekly'){
+                return { labels: fakeData.historical.labels.slice(), values: fakeData.historical.values.slice(), unit: 'kWh' };
+            }
+            if(range==='daily'){
+                // 24 random-ish hourly kWh values totaling around 12 kWh
+                const vals = Array.from({length:24},()=> +(Math.max(0.1, Math.random()*0.8).toFixed(2)));
+                const labels = Array.from({length:24},(_,i)=> (i<10? '0'+i: i)+':00');
+                return { labels, values: vals, unit: 'kWh' };
+            }
+            // monthly 30 days
+            const vals = Array.from({length:30},()=> +(9 + Math.random()*6).toFixed(2));
+            const labels = Array.from({length:30},(_,i)=> `Day ${i+1}`);
+            return { labels, values: vals, unit: 'kWh' };
+        }
+
+        function updateHistorical(range){
+            const h = computeHistorical(range);
+            if(typeof historicalChart !== 'undefined' && historicalChart){
+                historicalChart.data.labels = h.labels;
+                historicalChart.data.datasets[0].data = h.values;
+                historicalChart.update();
+            }
+            const total = h.values.reduce((a,b)=>a+(+b||0),0);
+            document.getElementById('histTotalKwh').textContent = total.toFixed(2);
+            document.getElementById('histTotalCost').textContent = (total * COST_PER_KWH).toFixed(2);
+            // Update weekly/daily stats UI if present
+            const weeklyAvgEl = document.getElementById('weeklyAverage');
+            const peakDayEl = document.getElementById('peakDay');
+            const lowDayEl = document.getElementById('lowDay');
+            if(weeklyAvgEl || peakDayEl || lowDayEl){
+                const avg = h.values.length ? (total / h.values.length) : 0;
+                const maxIdx = h.values.reduce((mi, v, i, arr)=> v > arr[mi] ? i : mi, 0);
+                const minIdx = h.values.reduce((mi, v, i, arr)=> v < arr[mi] ? i : mi, 0);
+                const labelAt = (i)=> h.labels[i] || `#${i+1}`;
+                if(weeklyAvgEl) weeklyAvgEl.textContent = `${avg.toFixed(1)} kWh${h.labels.length===24? '/hour':'/day'}`;
+                if(peakDayEl) peakDayEl.textContent = `${labelAt(maxIdx)} (${(+h.values[maxIdx]).toFixed(1)} kWh)`;
+                if(lowDayEl) lowDayEl.textContent = `${labelAt(minIdx)} (${(+h.values[minIdx]).toFixed(1)} kWh)`;
+            }
+        }
+
+        function generateForecast(hours){
+            const base = Array.from({length:24},(_,i)=> [200,180,150,120,100,80,100,150,200,300,400,500,600,550,500,450,400,350,300,250,200,150,100,80][i]);
+            const cycles = Math.ceil(hours/24);
+            const vals = [];
+            for(let c=0;c<cycles;c++){
+                vals.push(...base.map(v=> Math.max(60, Math.round(v * (0.9 + Math.random()*0.2)))));
+            }
+            return { hours: Array.from({length:hours},(_,i)=> {
+                        const d = Math.floor(i/24);
+                        const hh = i%24; 
+                        return (d? `D${d} `:'') + (hh<10? '0'+hh: hh)+':00';
+                    }),
+                     values: vals.slice(0,hours)};
+        }
+
+        function updateForecast(hours){
+            const pred = generateForecast(hours);
+            fakeData.prediction.hours = pred.hours;
+            fakeData.prediction.values = pred.values;
+            if(typeof predictionChart !== 'undefined' && predictionChart){
+                predictionChart.data.labels = pred.hours;
+                predictionChart.data.datasets[0].data = pred.values;
+                predictionChart.update();
+            }
+            renderPredictionInfo();
+            detectAnomaliesAndAlerts();
+        }
+
+        // Logging helper to append lines into system logs box
+        function logLine(msg){
+            const el = document.getElementById('logsContainer');
+            if(!el) return;
+            const t = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.textContent = `[${t}] ${msg}`;
+            el.appendChild(line);
+            el.scrollTop = el.scrollHeight;
+        }
+
+        // Compute basic summary metrics for prediction series
+        function computePredictionSummary(pred){
+            if(!pred || !Array.isArray(pred.values) || !pred.values.length) return null;
+            const vals = pred.values;
+            const sumW = vals.reduce((a,b)=> a + (+b||0), 0);
+            const expectedDailyKWh = sumW / 1000; // simple approximation
+            let peakIdx = 0; for(let i=1;i<vals.length;i++){ if(vals[i] > vals[peakIdx]) peakIdx = i; }
+            const peakValue = vals[peakIdx];
+            const label = (pred.hours && pred.hours[peakIdx]) ? pred.hours[peakIdx] : `${peakIdx}:00`;
+            const accuracy = 92 + Math.round(Math.random()*6*10)/10; // ~92-98%
+            // crude contiguous high range detection around peak
+            let start = peakIdx, end = peakIdx;
+            while(start>0 && vals[start-1] > 0.8*peakValue) start--;
+            while(end<vals.length-1 && vals[end+1] > 0.8*peakValue) end++;
+            const peakRange = `${pred.hours?.[start]||start}:00 - ${pred.hours?.[end]||end}:00`;
+            return { expectedDailyKWh, peakIdx, peakValue, peakLabel: label, peakRange, accuracy };
+        }
+
+        // Populate prediction info box from current forecast
+        function renderPredictionInfo(){
+            const s = computePredictionSummary(fakeData.prediction);
+            if(!s) return;
+            const peakHours = document.getElementById('peakHours');
+            const expectedDaily = document.getElementById('expectedDaily');
+            const peakLoad = document.getElementById('peakLoad');
+            const modelAccuracy = document.getElementById('modelAccuracy');
+            if(peakHours) peakHours.textContent = s.peakRange;
+            if(expectedDaily) expectedDaily.textContent = `${s.expectedDailyKWh.toFixed(1)} kWh`;
+            if(peakLoad) peakLoad.textContent = `~${Math.round(s.peakValue)} W at ${s.peakLabel}`;
+            if(modelAccuracy) modelAccuracy.textContent = `${s.accuracy.toFixed(1)}%`;
+            updateEnergyScore();
+        }
+
+        // Very simple anomaly detector using thresholds and latest live value; also seeds example alerts
+        function detectAnomaliesAndAlerts(){
+            const active = document.getElementById('alertsActive');
+            const past = document.getElementById('alertsPast');
+            if(!active || !past) return;
+            active.innerHTML = '';
+            past.innerHTML = '';
+            // seed a few example alerts
+            const examples = [
+                {type:'warning', icon:'fa-triangle-exclamation', title:'High usage predicted', text:'6:00 PM expected ~600 W. Consider shifting loads.'},
+                {type:'danger', icon:'fa-bolt', title:'Spike detected', text:'Realtime reading exceeded threshold (~720 W).'},
+                {type:'info', icon:'fa-circle-info', title:'Off-peak notice', text:'Off-peak rates start at 10:00 PM.'}
+            ];
+            examples.forEach((a,i)=>{
+                const div = document.createElement('div');
+                div.className = `alert alert-${a.type}`;
+                div.innerHTML = `<i class="fas ${a.icon}"></i><div><strong>${a.title}</strong><br>${a.text}</div>`;
+                (i<2? active: past).appendChild(div);
+            });
+            logLine('Alerts evaluated.');
+        }
+
+        function updateEnergyScore(){
+            const summary = computePredictionSummary(fakeData.prediction);
+            let score = 80;
+            if(summary){
+                // Simple heuristic: lower expectedDailyKWh -> higher score, clamp 60..95
+                const base = 100 - Math.min(35, summary.expectedDailyKWh * 3);
+                score = Math.max(60, Math.min(95, Math.round(base + (Math.random()*4-2))));
+            }
+            const badge = document.getElementById('energyScore');
+            if(badge){
+                badge.textContent = score;
+                badge.className = 'badge '+(score>=85? 'bg-success' : score>=75? 'bg-warning text-dark' : 'bg-danger');
+            }
+        }
+
+        function exportCSV(){
+            const labels = historicalChart.data.labels;
+            const data = historicalChart.data.datasets[0].data;
+            let csv = 'Label,Consumption(kWh),Cost(₱)\n';
+            for(let i=0;i<labels.length;i++){
+                const k = +data[i]||0; const cost = (k*COST_PER_KWH).toFixed(2);
+                csv += `${labels[i]},${k},${cost}\n`;
+            }
+            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'consumption.csv'; a.click(); URL.revokeObjectURL(url);
+            logLine('CSV export generated.');
+        }
+
+        function exportPDF(){
+            const w = window.open('', '_blank');
+            const total = document.getElementById('histTotalKwh').textContent;
+            const cost = document.getElementById('histTotalCost').textContent;
+            w.document.write(`<html><head><title>Report</title></head><body>`+
+                `<h3>Consumption Summary</h3>`+
+                `<p>Total: ${total} kWh<br>Cost: ₱${cost}</p>`+
+                `<p>Generated: ${new Date().toLocaleString()}</p>`+
+                `</body></html>`);
+            w.document.close(); w.focus(); w.print(); w.close();
+            logLine('PDF export triggered via print.');
+        }
+
+        // Devices
+        const devices = [];
+        function renderDevices(){
+            const tbody = document.getElementById('devicesTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            devices.forEach((d,idx)=>{
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${d.name}</td><td>${d.sensor}</td><td>${d.health}</td>`+
+                               `<td class="text-end"><button class="btn btn-sm btn-outline-danger" data-idx="${idx}"><i class="fas fa-trash"></i></button></td>`;
+                tbody.appendChild(tr);
+            });
+            tbody.querySelectorAll('button[data-idx]').forEach(btn=>{
+                btn.addEventListener('click', e=>{
+                    const i = +e.currentTarget.getAttribute('data-idx');
+                    const removed = devices.splice(i,1);
+                    renderDevices();
+                    logLine(`Device removed: ${removed[0]?.name||'unknown'}`);
+                });
+            });
+        }
+
+        // Users (admin)
+        function renderUsers(){
+            const tbody = document.getElementById('usersTableBody');
+            if(!tbody) return;
+            const users = window.appState.users || [];
+            tbody.innerHTML = '';
+            users.forEach((u,idx)=>{
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${u.email}</td><td>${u.role}</td>`+
+                               `<td class="text-end"><button class="btn btn-sm btn-outline-danger" data-idx="${idx}"><i class="fas fa-user-xmark"></i></button></td>`;
+                tbody.appendChild(tr);
+            });
+            tbody.querySelectorAll('button[data-idx]').forEach(btn=>{
+                btn.addEventListener('click', e=>{
+                    const i = +e.currentTarget.getAttribute('data-idx');
+                    const removed = window.appState.users.splice(i,1);
+                    renderUsers();
+                    logLine(`User removed: ${removed[0]?.email||'unknown'}`);
+                });
+            });
+        }
+
+        // Event wiring after DOM content loaded
+        window.addEventListener('DOMContentLoaded', () => {
+            // Auth init
+            const savedAuth = localStorage.getItem('auth');
+            if(savedAuth){ try{ window.appState.auth = JSON.parse(savedAuth);}catch{} }
+            updateAuthUI();
+            loadSettings();
+
+            document.getElementById('loginForm')?.addEventListener('submit', (e)=>{
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value.trim();
+                const pwd = document.getElementById('loginPassword').value;
+                const role = (email.toLowerCase()==='admin@demo.com' && pwd==='admin') ? 'admin' : 'user';
+                window.appState.auth = { email, role };
+                localStorage.setItem('auth', JSON.stringify(window.appState.auth));
+                updateAuthUI();
+                const modalEl = document.getElementById('loginModal');
+                if(modalEl){ bootstrap.Modal.getInstance(modalEl)?.hide(); }
+                logLine(`User logged in: ${email} (${role})`);
+            });
+
+            document.getElementById('logoutBtn')?.addEventListener('click', ()=>{
+                const who = window.appState.auth?.email;
+                window.appState.auth = null; localStorage.removeItem('auth');
+                updateAuthUI();
+                logLine(`User logged out: ${who||'unknown'}`);
+            });
+
+            document.getElementById('forgotPasswordLink')?.addEventListener('click', (e)=>{
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value || 'your email';
+                alert(`Password reset link would be sent to ${email} (prototype)`);
+                logLine('Password reset requested.');
+            });
+
+            // Alerts settings
+            document.getElementById('saveThresholdsBtn')?.addEventListener('click', saveSettings);
+            document.getElementById('sendTestAlertBtn')?.addEventListener('click', ()=>{
+                alert('Test notification sent (prototype).');
+                logLine('Test notification triggered.');
+            });
+
+            // Historical controls
+            const histSel = document.getElementById('histRangeSel');
+            histSel?.addEventListener('change', ()=> updateHistorical(histSel.value));
+            updateHistorical(histSel?.value||'weekly');
+
+            // Forecast controls
+            const predSel = document.getElementById('predRangeSel');
+            const refreshBtn = document.getElementById('fetchForecastBtn');
+            function doUpdate(){ updateForecast(parseInt(predSel.value,10)||24); updateEnergyScore(); }
+            predSel?.addEventListener('change', doUpdate);
+            refreshBtn?.addEventListener('click', async (e)=>{ 
+                e.preventDefault(); 
+                const hours = parseInt(predSel.value,10)||24; 
+                try{
+                    const res = await fetch(`/api/predict?hours=${hours}`);
+                    const data = await res.json();
+                    if(data && Array.isArray(data.values)){
+                        fakeData.prediction.hours = data.hours || data.labels || [];
+                        fakeData.prediction.values = data.values;
+                        if(typeof predictionChart !== 'undefined' && predictionChart){
+                            predictionChart.data.labels = fakeData.prediction.hours;
+                            predictionChart.data.datasets[0].data = fakeData.prediction.values;
+                            predictionChart.update();
+                        }
+                        renderPredictionInfo(); detectAnomaliesAndAlerts(); updateEnergyScore();
+                        logLine(`Forecast fetched via /api/predict (${hours}h).`);
+                    } else { doUpdate(); }
+                }catch(err){ doUpdate(); }
+            });
+            doUpdate();
+
+            // Reports
+            document.getElementById('exportCsvBtn')?.addEventListener('click', exportCSV);
+            document.getElementById('exportPdfBtn')?.addEventListener('click', exportPDF);
+            document.getElementById('scheduleToggle')?.addEventListener('change', (e)=>{
+                const on = e.target.checked; localStorage.setItem('schedReport', on? '1':'0');
+                logLine(`Scheduled report ${on? 'enabled':'disabled'}.`);
+            });
+            const schedSaved = localStorage.getItem('schedReport');
+            if(schedSaved==='1') document.getElementById('scheduleToggle').checked = true;
+
+            // Devices
+            document.getElementById('addDeviceForm')?.addEventListener('submit', (e)=>{
+                e.preventDefault();
+                const name = document.getElementById('deviceName').value.trim();
+                const sensor = document.getElementById('deviceSensor').value.trim();
+                const health = document.getElementById('deviceHealth').value;
+                if(name && sensor){ devices.push({name, sensor, health}); renderDevices(); e.target.reset(); logLine(`Device added: ${name}`); }
+            });
+            // Seed example devices
+            if(devices.length===0){
+                devices.push(
+                    {name:'Aircon', sensor:'sensor/ac', health:'Good'},
+                    {name:'Refrigerator', sensor:'sensor/fridge', health:'Good'},
+                    {name:'Water Heater', sensor:'sensor/heater', health:'Warning'}
+                );
+            }
+            renderDevices();
+
+            // Users (admin)
+            document.getElementById('addUserForm')?.addEventListener('submit', (e)=>{
+                e.preventDefault();
+                const email = document.getElementById('userEmail').value.trim();
+                const role = document.getElementById('userRole').value;
+                if(email){ (window.appState.users ||= []).push({email, role}); renderUsers(); e.target.reset(); logLine(`User added: ${email} (${role})`); }
+            });
+            // Seed example users
+            if((window.appState.users||[]).length===0){
+                window.appState.users = [
+                    { email:'admin@demo.com', role:'admin' },
+                    { email:'user1@example.com', role:'user' },
+                    { email:'user2@example.com', role:'user' }
+                ];
+            }
+            renderUsers();
+
+            // Initial fills
+            renderPredictionInfo();
+            detectAnomaliesAndAlerts();
+            logLine('System initialized.');
+        });
     </script>
 
 </body>

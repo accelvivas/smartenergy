@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <title>SmartEnergy Mobile</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { --pri:#1e3a5f; --acc:#2874a6; --bg:#f5f7fa; }
+    body { background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif; }
+    .app { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 72px; }
+    .app-header { background: linear-gradient(135deg, var(--pri), var(--acc)); color: #fff; padding: 14px 16px; display:flex; align-items:center; gap:10px; position: sticky; top: 0; z-index: 5; }
+    .app-header h1 { font-size: 18px; margin: 0; font-weight: 700; }
+    .card { border: none; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.06); }
+    .gauge { width: 200px; height: 200px; margin: 8px auto; border-radius: 50%; background: conic-gradient(#27ae60 0% 33%, #f39c12 33% 66%, #e74c3c 66% 100%); display:flex; align-items:center; justify-content:center; }
+    .gauge .inner { width: 160px; height: 160px; border-radius: 50%; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow: inset 0 4px 16px rgba(0,0,0,.08); }
+    .gauge .val { font-size: 34px; font-weight: 800; color: var(--pri); }
+    .bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid rgba(0,0,0,.06); z-index: 10; }
+    .bottom-nav .nav { display:flex; max-width: 480px; margin: 0 auto; }
+    .bottom-nav .nav-link { flex:1; text-align:center; padding: 10px 6px; font-size: 12px; color:#6c757d; }
+    .bottom-nav .nav-link.active { color: var(--acc); font-weight: 700; }
+    .section { padding: 12px 16px; }
+    .mini-chart { height: 120px; }
+    .seg { display:flex; gap:6px; }
+    .seg .btn { flex:1; }
+    .list-group-item { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .tip-line { display:flex; gap:10px; align-items:flex-start; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-header"><i class="fas fa-bolt"></i><h1>SmartEnergy Mobile</h1><span class="ms-auto badge bg-light text-dark" id="authBadge" style="display:none;"></span></div>
+
+    <div id="view-auth" class="section">
+      <div class="card">
+        <div class="card-body">
+          <div class="mb-2">Authentication</div>
+          <div class="mb-2">
+            <input type="email" id="mEmail" class="form-control" placeholder="you@example.com">
+          </div>
+          <div class="mb-3">
+            <input type="password" id="mPwd" class="form-control" placeholder="Password">
+          </div>
+          <div class="d-grid gap-2 mb-2">
+            <button id="mLoginBtn" class="btn btn-primary"><i class="fas fa-right-to-bracket"></i> Login</button>
+            <button id="mBioBtn" class="btn btn-outline-secondary"><i class="fas fa-fingerprint"></i> Biometric Unlock</button>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <small>Token expires: <span id="tokenExp">--</span></small>
+            <button id="mRefreshBtn" class="btn btn-sm btn-outline-success"><i class="fas fa-rotate"></i> Refresh Token</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-home" class="section" style="display:none;">
+      <div class="card mb-3">
+        <div class="card-body text-center">
+          <div class="gauge">
+            <div class="inner">
+              <div class="val" id="mGaugeVal">--</div>
+              <div class="text-muted">Watts</div>
+            </div>
+          </div>
+          <div class="small text-muted">Updated: <span id="mLastUpdate">--</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2"><div>Last N readings</div><select id="mN" class="form-select form-select-sm" style="width:90px;"><option>10</option><option selected>20</option><option>30</option></select></div>
+          <canvas id="mMiniChart" class="mini-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-history" class="section" style="display:none;">
+      <div class="seg mb-2">
+        <button class="btn btn-outline-primary active" data-range="daily">Daily</button>
+        <button class="btn btn-outline-primary" data-range="weekly">Weekly</button>
+      </div>
+      <ul class="list-group mb-3" id="histList"></ul>
+      <div class="card">
+        <div class="card-body">
+          <div class="mb-2">Details</div>
+          <canvas id="mHistoryChart" style="height:220px;"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-notifs" class="section" style="display:none;">
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="mb-2">Notifications</div>
+          <ul class="list-group" id="notifList"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-reco" class="section" style="display:none;">
+      <div class="card">
+        <div class="card-body">
+          <div class="mb-2">Recommendations</div>
+          <ul class="list-group" id="tipsList"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-settings" class="section" style="display:none;">
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="mb-2">Alert thresholds</div>
+          <div class="row g-2 mb-2">
+            <div class="col-6"><input id="mMult" type="number" step="0.1" min="1" class="form-control" placeholder="Spike multiplier"></div>
+            <div class="col-6"><input id="mAbs" type="number" min="0" class="form-control" placeholder="Absolute W"></div>
+          </div>
+          <div class="mb-2">Data sync interval</div>
+          <select id="mSync" class="form-select mb-3"><option value="3000">3s</option><option value="5000" selected>5s</option><option value="10000">10s</option></select>
+          <button id="mSaveSettings" class="btn btn-primary w-100">Save</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="mb-2">Devices</div>
+          <form id="mAddDev" class="row g-2 mb-2">
+            <div class="col-6"><input id="mdName" class="form-control" placeholder="Name"></div>
+            <div class="col-6"><input id="mdSensor" class="form-control" placeholder="Sensor"></div>
+            <div class="col-12 d-grid"><button class="btn btn-success" type="submit">Add</button></div>
+          </form>
+          <ul class="list-group" id="mDevList"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav nav-pills">
+        <a class="nav-link active" data-target="view-auth"><i class="fas fa-user-lock"></i><div>Auth</div></a>
+        <a class="nav-link" data-target="view-home"><i class="fas fa-house"></i><div>Home</div></a>
+        <a class="nav-link" data-target="view-history"><i class="fas fa-clock-rotate-left"></i><div>History</div></a>
+        <a class="nav-link" data-target="view-notifs"><i class="fas fa-bell"></i><div>Alerts</div></a>
+        <a class="nav-link" data-target="view-reco"><i class="fas fa-lightbulb"></i><div>Tips</div></a>
+        <a class="nav-link" data-target="view-settings"><i class="fas fa-gear"></i><div>Settings</div></a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const COST_PER_KWH = 13.5;
+    const state = { token:null, tokenExp:0, refreshTimer:null, syncMs:5000, devices:[], thresholds:{mult:1.7, abs:500} };
+
+    function nowTs(){ return Date.now(); }
+    function fmtTime(d=new Date()){ return d.toLocaleTimeString(); }
+    function setBadge(){ const b=document.getElementById('authBadge'); if(state.token){ b.style.display=''; b.textContent='Auth • '+new Date(state.tokenExp).toLocaleTimeString(); } else { b.style.display='none'; } }
+    function saveLocal(){ localStorage.setItem('m_state', JSON.stringify({token: state.token, tokenExp:state.tokenExp, syncMs:state.syncMs, thresholds:state.thresholds, devices:state.devices})); }
+    function loadLocal(){ try{ const s=JSON.parse(localStorage.getItem('m_state')||'{}'); if(s){ state.token=s.token||null; state.tokenExp=s.tokenExp||0; state.syncMs=s.syncMs||5000; state.thresholds=s.thresholds||state.thresholds; state.devices=s.devices||[]; } }catch{} }
+
+    function issueToken(minutes){ const exp = Date.now()+minutes*60*1000; state.token = Math.random().toString(36).slice(2); state.tokenExp=exp; saveLocal(); updateAuthUI(); scheduleRefresh(); }
+    function scheduleRefresh(){ if(state.refreshTimer) clearInterval(state.refreshTimer); state.refreshTimer=setInterval(()=>{ if(!state.token) return; if(state.tokenExp - nowTs() < 60000){ issueToken(15); } updateAuthUI(); }, 15000); }
+    function updateAuthUI(){ document.getElementById('tokenExp').textContent = state.token? new Date(state.tokenExp).toLocaleTimeString() : '--'; setBadge(); }
+
+    function biometricUnlock(){ if(window.PublicKeyCredential){ return Promise.resolve(true); } return Promise.resolve(true); }
+
+    const live = { labels:[], values:[] };
+    function pushLive(){ const last = live.values.length? live.values[live.values.length-1]: 300; const nv = Math.max(60, Math.round(last + (Math.random()*60-30))); const ts = new Date(); live.values.push(nv); live.labels.push(ts.getHours().toString().padStart(2,'0')+':'+ts.getMinutes().toString().padStart(2,'0')); const nSel = document.getElementById('mN'); const n = parseInt(nSel ? nSel.value: '20',10); if(live.values.length>n){ live.values.shift(); live.labels.shift(); } document.getElementById('mGaugeVal').textContent = nv; document.getElementById('mLastUpdate').textContent = fmtTime(ts); if(window.mMini) { mMini.data.labels = live.labels.slice(); mMini.data.datasets[0].data = live.values.slice(); mMini.update('none'); } }
+
+    function computeDaily(){ return Array.from({length:24},()=> +(Math.max(.1, Math.random()*0.8).toFixed(2))); }
+    function computeWeekly(){ return Array.from({length:7},()=> +(9 + Math.random()*6).toFixed(2)); }
+
+    function renderHistList(range){ const list = document.getElementById('histList'); list.innerHTML=''; if(range==='daily'){ const vals=computeDaily(); let total=0; vals.forEach((v,i)=>{ total+=v; const li=document.createElement('li'); li.className='list-group-item'; li.innerHTML = `<div>Hour ${i.toString().padStart(2,'0')}:00</div><div><strong>${v}</strong> kWh</div>`; list.appendChild(li); }); document.querySelectorAll('#view-history .seg .btn').forEach(b=>b.classList.remove('active')); document.querySelector('#view-history .seg .btn[data-range="daily"]').classList.add('active'); if(window.mHistory){ mHistory.data.labels = Array.from({length:24},(_,i)=> i+":00"); mHistory.data.datasets[0].data = vals; mHistory.update(); } }
+      else { const vals=computeWeekly(); const labels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun']; let total=0; vals.forEach((v,i)=>{ total+=v; const li=document.createElement('li'); li.className='list-group-item'; li.innerHTML = `<div>${labels[i]}</div><div><strong>${v}</strong> kWh</div>`; list.appendChild(li); }); document.querySelectorAll('#view-history .seg .btn').forEach(b=>b.classList.remove('active')); document.querySelector('#view-history .seg .btn[data-range="weekly"]').classList.add('active'); if(window.mHistory){ mHistory.data.labels = labels; mHistory.data.datasets[0].data = vals; mHistory.update(); } }
+    }
+
+    function seedNotifications(){ const list = document.getElementById('notifList'); list.innerHTML=''; const items = [ {type:'warning', icon:'fa-exclamation-triangle', text:'High usage predicted at 6 PM (~600 W).'}, {type:'danger', icon:'fa-bolt', text:'Sudden spike detected (720 W).'}, {type:'info', icon:'fa-circle-info', text:'Off-peak starts at 10 PM.'} ]; items.forEach((it,idx)=>{ const li=document.createElement('li'); li.className='list-group-item'; const act1 = `<button class="btn btn-sm btn-outline-secondary me-1" data-a="snooze" data-i="${idx}">Snooze</button>`; const act2 = `<button class="btn btn-sm btn-outline-primary" data-a="details" data-i="${idx}">Details</button>`; li.innerHTML = `<div class="d-flex align-items-start" style="gap:10px;"> <i class="fas ${it.icon} mt-1"></i> <div>${it.text}</div></div><div>${act1}${act2}</div>`; list.appendChild(li); }); list.querySelectorAll('button').forEach(btn=>{ btn.addEventListener('click', (e)=>{ const a=e.currentTarget.getAttribute('data-a'); alert((a==='snooze'?'Snoozed':'Opening details')+' (prototype)'); }); }); }
+
+    function seedTips(){ const tips=[ 'Use heavy appliances off-peak (10 PM - 6 AM).', 'Raise AC to 24–25°C to save 10–15%.', 'Replace remaining bulbs with LED.', 'Unplug idle chargers and devices.' ]; const list=document.getElementById('tipsList'); list.innerHTML=''; tips.forEach((t,i)=>{ const li=document.createElement('li'); li.className='list-group-item'; li.innerHTML = `<div class="tip-line"><i class="fas fa-leaf text-success mt-1"></i><div>${t}</div></div><div><button class="btn btn-sm btn-outline-success" data-i="${i}">Helpful</button></div>`; list.appendChild(li); }); list.querySelectorAll('button').forEach(btn=>{ btn.addEventListener('click', (e)=>{ e.currentTarget.disabled = true; e.currentTarget.textContent = 'Thanks'; }); }); }
+
+    function renderDevices(){ const ul=document.getElementById('mDevList'); ul.innerHTML=''; state.devices.forEach((d,i)=>{ const li=document.createElement('li'); li.className='list-group-item'; li.innerHTML = `<div>${d.name} <small class="text-muted">(${d.sensor})</small></div><button class="btn btn-sm btn-outline-danger" data-i="${i}"><i class="fas fa-trash"></i></button>`; ul.appendChild(li); }); ul.querySelectorAll('button').forEach(btn=>{ btn.addEventListener('click', (e)=>{ const i=+e.currentTarget.getAttribute('data-i'); state.devices.splice(i,1); saveLocal(); renderDevices(); }); }); }
+
+    function show(target){ document.querySelectorAll('.section').forEach(s=>s.style.display='none'); document.getElementById(target).style.display=''; document.querySelectorAll('.bottom-nav .nav-link').forEach(a=>{ a.classList.toggle('active', a.getAttribute('data-target')===target); }); }
+
+    document.querySelectorAll('.bottom-nav .nav-link').forEach(a=> a.addEventListener('click', ()=> show(a.getAttribute('data-target'))));
+
+    let mMini, mHistory;
+    function initCharts(){ const m1=document.getElementById('mMiniChart'); const m2=document.getElementById('mHistoryChart'); mMini = new Chart(m1, { type:'line', data:{ labels:[], datasets:[{ label:'W', data:[], borderColor:'#2874a6', backgroundColor:'rgba(40,116,166,.15)', fill:true, tension:.4 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}} } }); mHistory = new Chart(m2, { type:'bar', data:{ labels:[], datasets:[{ label:'kWh', data:[], backgroundColor:'rgba(40,116,166,.8)'}] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} } }); }
+
+    function startSync(){ if(window._sync) clearInterval(window._sync); window._sync = setInterval(pushLive, state.syncMs); }
+
+    document.getElementById('mLoginBtn').addEventListener('click', ()=>{ const email=document.getElementById('mEmail').value.trim(); const pwd=document.getElementById('mPwd').value; if(!email||!pwd){ alert('Enter email and password'); return; } issueToken(15); alert('Logged in (prototype)'); show('view-home'); });
+    document.getElementById('mBioBtn').addEventListener('click', async ()=>{ const ok = await biometricUnlock(); if(ok){ if(!state.token) issueToken(15); show('view-home'); } else { alert('Biometric unavailable'); } });
+    document.getElementById('mRefreshBtn').addEventListener('click', ()=>{ if(!state.token){ alert('Not authenticated'); return; } issueToken(15); alert('Token refreshed (prototype)'); });
+
+    document.getElementById('mN').addEventListener('change', ()=>{ if(mMini) mMini.update(); });
+
+    document.querySelectorAll('#view-history .seg .btn').forEach(btn=> btn.addEventListener('click', ()=> renderHistList(btn.getAttribute('data-range'))));
+
+    document.getElementById('mSaveSettings').addEventListener('click', ()=>{ const mult=parseFloat(document.getElementById('mMult').value)||1.7; const abs=parseFloat(document.getElementById('mAbs').value)||500; const sync=parseInt(document.getElementById('mSync').value,10)||5000; state.thresholds={mult, abs}; state.syncMs=sync; saveLocal(); startSync(); alert('Settings saved'); });
+
+    document.getElementById('mAddDev').addEventListener('submit', (e)=>{ e.preventDefault(); const name=document.getElementById('mdName').value.trim(); const sensor=document.getElementById('mdSensor').value.trim(); if(name&&sensor){ state.devices.push({name, sensor}); saveLocal(); renderDevices(); e.target.reset(); }});
+
+    window.addEventListener('load', ()=>{ loadLocal(); setBadge(); initCharts(); renderHistList('daily'); seedNotifications(); seedTips(); renderDevices(); startSync(); setInterval(updateAuthUI, 1000); show('view-auth'); });
+  </script>
+</body>
+</html>
